@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Kate Beavis | Software Engineer | Testing HTTP requests in Rails with VCR</title>
+  <meta name="description" content="A guide to setting up the VCR gem in Rails to test HTTP requests">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="Testing HTTP requests in Rails with VCR">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://katebeavis.github.io/posts/testing-http-requests-in-rails-with-vcr">
+  <meta property="og:description" content="A guide to setting up the VCR gem in Rails to test HTTP requests">
+  <meta property="og:site_name" content="Kate Beavis | Software Engineer">
+  <meta property="og:image" content="https://katebeavis.github.io/assets/og-image.png">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:url" content="https://katebeavis.github.io/posts/testing-http-requests-in-rails-with-vcr">
+  <meta name="twitter:title" content="Testing HTTP requests in Rails with VCR">
+  <meta name="twitter:description" content="A guide to setting up the VCR gem in Rails to test HTTP requests">
+  <meta name="twitter:image" content="https://katebeavis.github.io/assets/og-image.png">
+
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link href="https://katebeavis.github.io/feed.xml" type="application/rss+xml" rel="alternate" title="Kate Beavis | Software Engineer Last 10 blog posts">
+
+  
+    <link type="text/css" rel="stylesheet" href="/assets/light.css">
+  
+</head>
+
+<body>
+  <main role="main">
+    <div class="grid grid-centered">
+      <div class="grid-cell">
+        <nav class="header-nav reveal">
+  <a href="/" class="header-logo" title="Kate Beavis | Software Engineer">Kate Beavis <span class="subtitle" style="color: #b3b3b3; font-size: 0.95em;">Software Engineer</span></a>
+  <br>
+  <div>
+    
+      <a href="/" style="margin-right: 1em;">Blog</a>
+    
+    
+      <a href="/about" style="margin-right: 1em;">About me</a>
+    
+    
+      <a href="/projects">Projects</a>
+    
+  </div>
+  <ul class="header-links">
+    
+    
+      <li>
+        <a href="https://twitter.com/katebeavis" target="_blank" title="Twitter">
+          <span class="icon icon-social-twitter"></span>
+        </a>
+      </li>
+    
+    
+    
+      <li>
+        <a href="https://github.com/katebeavis" target="_blank" title="GitHub">
+          <span class="icon icon-social-github"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+      <li>
+        <a href="https://www.linkedin.com/in/kate-beavis-679a9990" target="_blank" title="LinkedIn">
+          <span class="icon icon-social-linkedin"></span>
+        </a>
+      </li>
+    
+    
+    
+    
+  </ul>
+</nav>
+
+        <article class="article reveal">
+          <header class="article-header">
+            <h1>Testing HTTP requests in Rails with VCR</h1>
+            <p>A guide to setting up the VCR gem in Rails to test HTTP requests</p>
+            <div class="article-list-footer">
+              <span class="article-list-date">
+                January 15, 2017
+              </span>
+              <span class="article-list-divider">-</span>
+              <span class="article-list-minutes">
+                
+                
+                  4 minute read
+                
+              </span>
+              <span class="article-list-divider">-</span>
+              <div class="article-list-tags">
+                
+                  <a href="/tag/ruby">ruby</a>
+                
+                  <a href="/tag/rails">rails</a>
+                
+                  <a href="/tag/testing">testing</a>
+                
+                  <a href="/tag/rspec">rspec</a>
+                
+              </div>
+            </div>
+          </header>
+
+          <div class="article-content">
+            <p>Recently I was working on a <a href="https://github.com/katebeavis/pr-hero/" target="_blank">project</a> that relied heavily on the Github API which meant that when I was running tests, I was hitting the API every time. Now for authenticated requests, the rate limit was set at 5,000 hits per hour - I am a believer in testing as much as you can, but I don’t think even I could hit that limit!</p>
+
+<p>The main issue for me however, was that I was hitting a ‘live’ repo (one I use at work), and trying to get back things like number of comments made on pull requests in the past 24 hours. Unfortunately, my pesky colleagues kept on doing silly things like reviewing each others PR’s and making comments, so tests like this that would pass minute….</p>
+
+<figure class="highlight"><pre><code class="language-markdown" data-lang="markdown">it 'returns the number of comments for each user' do
+  expect(compute_comment.get_comments_by_user(users)<span class="p">[</span><span class="nv">0</span><span class="p">]</span>.count).to eq(95)
+end</code></pre></figure>
+
+<p>….would end up failing as soon as that user had made another comment <img class="emoji" title=":angry:" alt=":angry:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f620.png" height="20" width="20" align="absmiddle"></p>
+
+<p>And, if you do happen to be using an API with a low rate limit or a paid one, or just want to speed up your RSpec tests (don’t we all), you will want to find an alternative to constantly making HTTP requests.</p>
+
+<p>This is where the <a href="https://github.com/vcr/vcr" target="_blank">VCR gem</a> comes in. We use VCR at work on most of our Rails projects but I didn’t really understand how it worked, and in fact thought it was really complicated to use (spoiler alert: it’s not!).</p>
+
+<h1 id="so-how-does-vcr-work">So, how does VCR work?</h1>
+
+<p>VCR works by letting your tests hit the API as usual the first time the test is run. It then stores the response it gets back as a ‘cassette’ file. From then on, everytime you run your specs, that test will use that cassette. This meant that I could <del>hack away at</del> refactor my <code class="highlighter-rouge">get_comments_by_user</code> method and if it failed, it would be because I messed something up in the code, not because somebody had made another comment.</p>
+
+<h1 id="sounds-good-how-do-i-set-it-up">Sounds good, how do I set it up?<br>
+</h1>
+<h3 id="1-install-gems">1. Install gems</h3>
+
+<p>First things first, you need to add the gem to your Gemfile. You will also need to use another gem that helps to stub out external HTTP requests such as</p>
+
+<ul>
+  <li><a href="https://github.com/bblimke/webmock" target="_blank">WebMock</a></li>
+  <li><a href="https://github.com/typhoeus/typhoeus" target="_blank">Typhoeus</a></li>
+  <li><a href="https://github.com/lostisland/faraday" target="_blank">Faraday</a></li>
+</ul>
+
+<p>I have seen some tutorials referring to FakeWeb, but please don’t use that unless you like deprecation warnings <img class="emoji" title=":satisfied:" alt=":satisfied:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f606.png" height="20" width="20" align="absmiddle"></p>
+
+<p>Add them to your Gemfile and bundle install</p>
+
+<figure class="highlight"><pre><code class="language-markdown" data-lang="markdown">gem 'vcr'
+gem 'webmock'</code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-markdown" data-lang="markdown">bundle install</code></pre></figure>
+
+<h3 id="2-add-configuration">2. Add configuration</h3>
+
+<p>Add a <code class="highlighter-rouge">cassettes</code> directory inside <code class="highlighter-rouge">spec</code> - this is where your cassettes will be saved</p>
+
+<p>Add a new file <code class="highlighter-rouge">vcr_setup.rb</code> inside your <code class="highlighter-rouge">spec</code> directory (or you can just add this code directly to your <code class="highlighter-rouge">spec_helper.rb</code>). In this file, add the following code:</p>
+
+<figure class="highlight"><pre><code class="language-markdown" data-lang="markdown">require 'vcr'
+
+VCR.configure do |c|
+  c.cassette_library_dir = 'spec/cassettes'
+  c.hook_into :webmock
+end</code></pre></figure>
+
+<p>Remember to add <code class="highlighter-rouge">require 'vcr_setup.rb'</code> to your <code class="highlighter-rouge">spec_helper.rb</code> or where ever you need to so that it is required by your test suite.</p>
+
+<h2 id="3-add-vcr-to-your-test">3. Add VCR to your test</h2>
+
+<p>Wrap your expectation in a VCR block and name the cassette something relevant:</p>
+
+<figure class="highlight"><pre><code class="language-markdown" data-lang="markdown">it 'returns the number of comments for each user' do
+  VCR.use_cassette('comments_on_pull_requests') do
+    expect(compute_comment.get_comments_by_user(users)<span class="p">[</span><span class="nv">0</span><span class="p">]</span>.count).to eq(95)
+  end
+end</code></pre></figure>
+
+<p>Now when you run the test for the first time, a cassette called <code class="highlighter-rouge">commments_on_pull_requests.yml</code> will be saved in your <code class="highlighter-rouge">spec/cassettes</code> directory.</p>
+
+<p>The next time you run this test, it will use this cassette. To test that it is using it, you can try turning off your Wifi and it should still pass.</p>
+
+<h2 id="4-run-a-vcr-cassette-for-a-whole-file">4. Run a VCR cassette for a whole file</h2>
+
+<p>Instead of wrapping every test expectation in a file in a VCR block which could get very tedious, you can add the cassette to a <code class="highlighter-rouge">before do</code> block. Just don’t forget to eject it afterwards:</p>
+
+<figure class="highlight"><pre><code class="language-markdown" data-lang="markdown">before do
+  VCR.insert_cassette('comments_on_pull_requests')
+end
+after do
+  VCR.eject_cassette
+end</code></pre></figure>
+
+<p>You can also use this inside multiple describe blocks, meaning that you can use multiple cassettes for blocks of tests within your spec.</p>
+
+<h2 id="what-if-you-dont-want-to-use-vcr-for-every-http-request">What if you don’t want to use VCR for every HTTP request?</h2>
+
+<p>After adding VCR, if you try to run a spec that makes a HTTP request without a cassette, you will get a <code class="highlighter-rouge">VCR::Errors::UnhandledHTTPRequestError</code></p>
+
+<figure class="highlight"><pre><code class="language-markdown" data-lang="markdown">An HTTP request has been made that VCR does not know how to handle:
+  POST https://someurl.com/
+     
+ There is currently no cassette in use. There are a few ways
+ you can configure VCR to handle this request:</code></pre></figure>
+
+<p>Either wrap that spec in a VCR block, or, if you don’t want VCR to handle this request, just add the line <code class="highlighter-rouge">c.allow_http_connections_when_no_cassette = true</code> within your VCR configure block in the <code class="highlighter-rouge">vcr_setup.rb</code> file.</p>
+
+<h3 id="a-gotcha">A gotcha</h3>
+
+<p>Sometimes this error can occur even when you have a cassette in place. I have found that this tends to happen when I am including a variable in my test, like a username that is required to hit the API, and for some reason I have changed it.</p>
+
+<p>In a situation like this, I usually grab this line from the error: <code class="highlighter-rouge">POST https://someurl.com/</code> and compare it the url under the <code class="highlighter-rouge">uri</code> key in the cassette that I am using for that test.</p>
+
+<h2 id="wrapping-up">Wrapping up</h2>
+
+<p>VCR is a simple to use gem that can save a lot of headaches when it comes to testing API’s with RSpec, and can even speed up your test suite and let you test when you have no internet connection <img class="emoji" title=":tada:" alt=":tada:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f389.png" height="20" width="20" align="absmiddle"></p>
+
+<p>I hope that you have enjoyed this post and found it useful. Please let me know if you have any questions or issues in the comments <img class="emoji" title=":smiley:" alt=":smiley:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/1f603.png" height="20" width="20" align="absmiddle"></p>
+
+          </div>
+
+          <div class="article-share">
+            
+            <a href="" title="Share on Twitter" onclick="window.open('https://twitter.com/home?status=Testing HTTP requests in Rails with VCR - https://katebeavis.github.io/posts/testing-http-requests-in-rails-with-vcr by @katebeavis', 'newwindow', 'width=500, height=225'); return false;">
+              <span class="icon icon-social-twitter"></span>
+            </a>
+            <a href="" title="Share on Facebook" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https://katebeavis.github.io/posts/testing-http-requests-in-rails-with-vcr', 'newwindow', 'width=500, height=500'); return false;">
+              <span class="icon icon-social-facebook"></span>
+            </a>
+            <a href="" title="Share on Google+" onclick="window.open('https://plus.google.com/share?url=https://katebeavis.github.io/posts/testing-http-requests-in-rails-with-vcr', 'newwindow', 'width=550, height=400'); return false;">
+              <span class="icon icon-social-googleplus"></span>
+            </a>
+          </div>
+
+          
+            <div id="disqus_thread" class="article-comments"></div>
+            <script>
+              (function() {
+                  var d = document, s = d.createElement('script');
+                  s.src = '//katebeavis-github-io.disqus.com/embed.js';
+                  s.setAttribute('data-timestamp', +new Date());
+                  (d.head || d.body).appendChild(s);
+              })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+          
+        </article>
+        <footer class="footer reveal">
+  <p>
+    Blog template for Jekyll built by
+    <a href="https://github.com/nielsenramon/chalk" title="Nielsen Ramon">Nielsen Ramon</a>
+  </p>
+</footer>
+
+      </div>
+    </div>
+  </main>
+  <script type="text/javascript" src="/assets/vendor.js"></script>
+<script type="text/javascript" src="/assets/application.js"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Cormorant Garamond:700', 'Lato:300,400,700']
+    }
+  });
+</script>
+
+
+
+</body>
+</html>

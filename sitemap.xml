@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>https://katebeavis.github.io/posts/testing-http-requests-in-rails-with-vcr</loc>
+<lastmod>2017-01-15T00:00:00+00:00</lastmod>
+</url>
+<url>
+<loc>https://katebeavis.github.io/about</loc>
+</url>
+<url>
+<loc>https://katebeavis.github.io/</loc>
+</url>
+<url>
+<loc>https://katebeavis.github.io/projects</loc>
+</url>
+<url>
+<loc>https://katebeavis.github.io/tag/design/</loc>
+</url>
+<url>
+<loc>https://katebeavis.github.io/tag/jekyll/</loc>
+</url>
+<url>
+<loc>https://katebeavis.github.io/tag/rails/</loc>
+</url>
+<url>
+<loc>https://katebeavis.github.io/tag/rspec/</loc>
+</url>
+<url>
+<loc>https://katebeavis.github.io/tag/ruby/</loc>
+</url>
+<url>
+<loc>https://katebeavis.github.io/tag/testing/</loc>
+</url>
+<url>
+<loc>https://katebeavis.github.io/tag/web/</loc>
+</url>
+</urlset>
