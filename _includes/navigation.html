@@ -2,7 +2,7 @@
   <a href="{{ '/' | relative_url }}" class="header-logo" title="{{ site.name }}">Kate Beavis <span class="subtitle" style="color: #b3b3b3; font-size: 0.95em;">Software Engineer</span></a>
   <br />
   <div style="text-decoration: none;">
-    <a style="padding-right: 1em;">About me</a> <a>Projects</a>
+    <a href="{{ 'about' | relative_url }}" style="padding-right: 1em;">About me</a> <a href="{{ 'projects' | relative_url }}">Projects</a>
   </div>
   <ul class="header-links">
     {% if site.about_enabled == true %}
