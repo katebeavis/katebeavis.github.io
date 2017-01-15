@@ -6,7 +6,7 @@ og_image: "og-image.png"
 tags: [ruby, rails, testing, rspec]
 ---
 
-Recently I was working on a [project](https://github.com/katebeavis/pr-hero/){:target="_blank"} that relied heavily on the Github API which meant that when I was running tests, I was hitting the API everytime. Now for authenticated requests, the rate limit was set at 5,000 hits per hour - I am a believer in testing as much as you can, but I don't think even I could hit that limit!
+Recently I was working on a [project](https://github.com/katebeavis/pr-hero/){:target="_blank"} that relied heavily on the Github API which meant that when I was running tests, I was hitting the API every time. Now for authenticated requests, the rate limit was set at 5,000 hits per hour - I am a believer in testing as much as you can, but I don't think even I could hit that limit!
 
 The main issue for me however, was that I was hitting a 'live' repo (one I use at work), and trying to get back things like number of comments made on pull requests in the past 24 hours. Unfortunately, my pesky colleagues kept on doing silly things like reviewing each others PR's and making comments, so tests like this that would pass minute....
 
