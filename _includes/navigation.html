@@ -1,8 +1,17 @@
 <nav class="header-nav reveal">
   <a href="{{ '/' | relative_url }}" class="header-logo" title="{{ site.name }}">Kate Beavis <span class="subtitle" style="color: #b3b3b3; font-size: 0.95em;">Software Engineer</span></a>
   <br />
-  <div style="text-decoration: none;">
-    <a href="{{ 'about' | relative_url }}" style="padding-right: 1em;">About me</a> <a href="{{ 'projects' | relative_url }}">Projects</a>
+  <div>
+    {% if page.active == "about" %}
+      <a href="{{ 'about' | relative_url }}" class="active" style="margin-right: 1em; padding: 0.20em; text-decoration: none;">About me</a>
+    {% else %}
+      <a href="{{ 'about' | relative_url }}" style="margin-right: 1em;">About me</a>
+    {% endif %}
+    {% if page.active == "projects" %}
+      <a href="{{ 'projects' | relative_url }}" class="active" style="padding: 0.20em; text-decoration: none;">Projects</a>
+    {% else %}
+      <a href="{{ 'projects' | relative_url }}">Projects</a>
+    {% endif %}
   </div>
   <ul class="header-links">
     {% if site.about_enabled == true %}
