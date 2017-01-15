@@ -2,6 +2,7 @@
 layout: post
 title: "Testing HTTP requests in Rails with VCR"
 description: "A guide to setting up the VCR gem in Rails to test HTTP requests"
+og_image: "og-image.jpg"
 tags: [ruby, rails, testing, rspec]
 ---
 
