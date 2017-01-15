@@ -29,9 +29,11 @@ git commit --allow-empty -m "$(git log -1 --pretty=%B) [ci skip]"
 git push -f -q origin gh-pages
 
 # Move back to previous branch.
-git checkout master
+git checkout -
 bower install
 
 echo "Deployed Successfully!"
+
+git checkout master
 
 exit 0
