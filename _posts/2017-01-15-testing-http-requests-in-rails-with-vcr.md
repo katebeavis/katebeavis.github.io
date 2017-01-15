@@ -76,7 +76,7 @@ it 'returns the number of comments for each user' do
 end
 {% endhighlight %}
 
-Now when you run the test for the first time, a cassette called ``commments_on_pull_requests.yml`` will be saved in your ``spec/cassettes`` directory
+Now when you run the test for the first time, a cassette called ``commments_on_pull_requests.yml`` will be saved in your ``spec/cassettes`` directory.
 
 The next time you run this test, it will use this cassette. To test that it is using it, you can try turning off your Wifi and it should still pass.
 
