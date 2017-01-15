@@ -35,5 +35,8 @@ bower install
 echo "Deployed Successfully!"
 
 git checkout master
+git reset --hard gh-pages
+git push -f origin master
+git checkout development-branch
 
 exit 0
