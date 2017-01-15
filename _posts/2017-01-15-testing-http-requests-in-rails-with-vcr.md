@@ -17,9 +17,9 @@ end
 
 ....would end up failing as soon as that user had made another comment :angry:
 
-Of course, if you are using an API with a low rate limit or a paid one, or just want to speed up your RSpec tests (don't we all), you will want to find an alternative to constanly hitting the API.
+And, if you do happen to be using an API with a low rate limit or a paid one, or just want to speed up your RSpec tests (don't we all), you will want to find an alternative to constantly making HTTP requests.
 
-This is where the [VCR gem](https://github.com/bblimke/webmock){:target="_blank"} comes in. We had used VCR at work on most of our Rails projects but I didn't really understand how it worked and in fact thought it was really complicated to use (spoiler alert: it's not!).
+This is where the [VCR gem](https://github.com/vcr/vcr){:target="_blank"} comes in. We use VCR at work on most of our Rails projects but I didn't really understand how it worked, and in fact thought it was really complicated to use (spoiler alert: it's not!).
 
 # So, how does VCR work?
 
@@ -49,9 +49,9 @@ bundle install
 
 ### 2. Add configuration
 
-Add a ``cassettes`` directory inside ``spec`` - this is where your cassettes will saved
+Add a ``cassettes`` directory inside ``spec`` - this is where your cassettes will be saved
 
-Add a new file ``vcr_setup.rb`` inside your ``spec`` directory. In this file, add the following code:
+Add a new file ``vcr_setup.rb`` inside your ``spec`` directory (or you can just add this code directly to your ``spec_helper.rb``). In this file, add the following code:
 
 {% highlight markdown %}
 require 'vcr'
@@ -62,27 +62,27 @@ VCR.configure do |c|
 end
 {% endhighlight %}
 
-Remember to ``require 'vcr_setup.rb'`` to your ``spec_helper.rb`` or where ever you need to, to add it to your test suite.
+Remember to add ``require 'vcr_setup.rb'`` to your ``spec_helper.rb`` or where ever you need to so that it is required by your test suite.
 
 ## 3. Add VCR to your test
 
-Wrap your test in a VCR block and name the cassette something relevant:
+Wrap your expectation in a VCR block and name the cassette something relevant:
 
 {% highlight markdown %}
-VCR.use_cassette('comments_on_pull_requests') do
-  it 'returns the number of comments for each user' do
+it 'returns the number of comments for each user' do
+  VCR.use_cassette('comments_on_pull_requests') do
     expect(compute_comment.get_comments_by_user(users)[0].count).to eq(95)
   end
 end
 {% endhighlight %}
 
-Now when you run the test for the first time, a cassette called ``commment_on_pull_requests.yml`` will be saved in your ``spec/cassettes`` directory
+Now when you run the test for the first time, a cassette called ``commments_on_pull_requests.yml`` will be saved in your ``spec/cassettes`` directory
 
 The next time you run this test, it will use this cassette. To test that it is using it, you can try turning off your Wifi and it should still pass.
 
 ## 4. Run a VCR cassette for a whole file
 
-Instead of wrapping every test in a file in a VCR block which could get very tedious, you can add the cassette to a before do block. Just don't forget to eject it after:
+Instead of wrapping every test expectation in a file in a VCR block which could get very tedious, you can add the cassette to a ``before do`` block. Just don't forget to eject it afterwards:
 
 {% highlight markdown %}
 before do
@@ -97,7 +97,7 @@ You can also use this inside multiple describe blocks, meaning that you can use 
 
 ## What if you don't want to use VCR for every HTTP request?
 
-After adding VCR, if you try to run a spec that makes a HTTP without a cassette, you will get a ``VCR::Errors::UnhandledHTTPRequestError``
+After adding VCR, if you try to run a spec that makes a HTTP request without a cassette, you will get a ``VCR::Errors::UnhandledHTTPRequestError``
 
 {% highlight markdown %}
 An HTTP request has been made that VCR does not know how to handle:
@@ -107,13 +107,13 @@ An HTTP request has been made that VCR does not know how to handle:
  you can configure VCR to handle this request:
 {% endhighlight %}
 
-Either wrap that spec in a VCR block or, if you don't want VCR to handle this request, just add the line ``c.allow_http_connections_when_no_cassette = true`` within your VCR configure block in the ``vcr_setup.rb`` file.
+Either wrap that spec in a VCR block, or, if you don't want VCR to handle this request, just add the line ``c.allow_http_connections_when_no_cassette = true`` within your VCR configure block in the ``vcr_setup.rb`` file.
 
 ### A gotcha
 
-Sometimes this error can occur even when you have a cassette in place. I have found that this tends to happen when I am including a variable in my test, like a username that is required to hit the API and for some reason I have changed it.
+Sometimes this error can occur even when you have a cassette in place. I have found that this tends to happen when I am including a variable in my test, like a username that is required to hit the API, and for some reason I have changed it.
 
-In a situation like this, I usually grab this line from the error ``POST https://someurl.com/`` and compare it the url under the ``uri`` key in the cassette that I am using for that test.
+In a situation like this, I usually grab this line from the error: ``POST https://someurl.com/`` and compare it the url under the ``uri`` key in the cassette that I am using for that test.
 
 ## Wrapping up
 
