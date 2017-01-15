@@ -18,9 +18,12 @@
 }
 
 .header-links {
+  position: absolute;
+  top: 74px;
+  right: 20px;
   float: right;
   padding: 0;
-  margin: 15px 0 0;
+  margin: 7px 0 0;
   list-style: none;
   li {
     display: inline-block;
@@ -30,7 +33,7 @@
       margin-left: 0;
     }
     a {
-      font-size: 18px;
+      font-size: 32px;
       color: $header-link-color;
       &:hover {
         color: $header-link-color-hover;
@@ -47,6 +50,8 @@
     display: block;
     float: none;
     text-align: center;
+    top: 20px;
+    right: 140px;
     li {
       margin: 0 10px;
       &:last-child {
