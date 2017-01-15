@@ -2,6 +2,11 @@
   <a href="{{ '/' | relative_url }}" class="header-logo" title="{{ site.name }}">Kate Beavis <span class="subtitle" style="color: #b3b3b3; font-size: 0.95em;">Software Engineer</span></a>
   <br />
   <div>
+    {% if page.active == "blog" %}
+      <a href="{{ '/' | relative_url }}" class="active" style="margin-right: 1em; padding: 0.20em; text-decoration: none;">Blog</a>
+    {% else %}
+      <a href="{{ '/' | relative_url }}" style="margin-right: 1em;">Blog</a>
+    {% endif %}
     {% if page.active == "about" %}
       <a href="{{ 'about' | relative_url }}" class="active" style="margin-right: 1em; padding: 0.20em; text-decoration: none;">About me</a>
     {% else %}
